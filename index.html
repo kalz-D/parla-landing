@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parla — the voice-first inquiry widget</title>
+<meta name="description" content="Parla lets website visitors simply say what they need. AI rewrites their words into a clear, complete inquiry — translated into your language — and delivers it to your inbox.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Spline+Sans+Mono:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF5EC;
+    --paper-deep:#F2EADB;
+    --card:#FFFDF8;
+    --ink:#1A1611;
+    --ink-soft:#6B6355;
+    --ink-faint:#786E5E;
+    --line:rgba(26,22,17,.13);
+    --accent:#E8490F;
+    --accent-deep:#A93007;
+    --accent-soft:#FBE3D8;
+    --green:#2E6B4F;
+    --green-soft:#E2EEE5;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Instrument Sans",sans-serif;
+    --mono:"Spline Sans Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* ---------- grain ---------- */
+  body{position:relative}
+  body::after{
+    content:"";position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection{background:var(--accent);color:var(--paper)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:color-mix(in srgb, var(--paper) 96%, transparent);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .wordmark{
+    font-family:var(--serif);font-size:1.55rem;font-weight:600;letter-spacing:-.02em;
+    color:var(--ink);text-decoration:none;display:flex;align-items:baseline;gap:2px;
+  }
+  .wordmark .dot{color:var(--accent);font-size:1.8rem;line-height:0}
+  .nav-links{display:flex;align-items:center;gap:28px}
+  .nav-links a{color:var(--ink-soft);text-decoration:none;font-size:.95rem;transition:color .2s}
+  .nav-links a:hover{color:var(--ink)}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--sans);font-weight:600;font-size:.95rem;
+    padding:11px 22px;border-radius:99px;border:1px solid var(--ink);
+    text-decoration:none;cursor:pointer;transition:all .2s ease;
+  }
+  .btn-primary{background:var(--ink);color:var(--paper)}
+  .btn-primary:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+  .btn-ghost{background:transparent;color:var(--ink)}
+  .btn-ghost:hover{background:var(--ink);color:var(--paper)}
+  .btn-accent{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff}
+  .btn-accent:hover{background:#8A2706;border-color:#8A2706;transform:translateY(-1px)}
+  .nav-links .btn{padding:8px 18px}
+
+  /* ---------- hero ---------- */
+  header.hero{position:relative;padding:84px 0 40px;text-align:center;overflow:visible}
+  .hero-glow{
+    position:absolute;left:50%;top:-10%;transform:translateX(-50%);
+    width:1100px;height:700px;pointer-events:none;z-index:-1;
+    background:radial-gradient(ellipse at center,rgba(232,73,15,.10) 0%,rgba(232,73,15,.04) 40%,transparent 70%);
+  }
+  .overline{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-soft);border:1px solid var(--line);border-radius:99px;padding:7px 16px;
+    background:var(--card);
+  }
+  .overline .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,73,15,.5)}50%{box-shadow:0 0 0 6px rgba(232,73,15,0)}}
+  h1{
+    font-family:var(--serif);font-weight:480;font-optical-sizing:auto;
+    font-size:clamp(2.7rem,6.6vw,5.2rem);line-height:1.04;letter-spacing:-.025em;
+    margin:26px auto 20px;max-width:15ch;
+  }
+  h1 em{font-style:italic;color:var(--accent);font-weight:530}
+  .hero-sub{max-width:56ch;margin:0 auto 34px;color:var(--ink-soft);font-size:1.15rem}
+  .hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:64px}
+
+  /* staggered load-in */
+  .rise{opacity:0;transform:translateY(18px);animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .d1{animation-delay:.05s}.d2{animation-delay:.15s}.d3{animation-delay:.25s}.d4{animation-delay:.35s}.d5{animation-delay:.5s}
+
+  /* ---------- widget ---------- */
+  .widget-frame{position:relative;max-width:620px;margin:0 auto}
+  .widget-caption{
+    font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .widget-caption::before,.widget-caption::after{content:"";height:1px;width:48px;background:var(--line)}
+  .widget{
+    background:var(--card);border:1px solid var(--line);border-radius:22px;
+    box-shadow:0 2px 6px rgba(26,22,17,.05),0 24px 60px -18px rgba(26,22,17,.18);
+    text-align:left;overflow:hidden;
+  }
+  .widget-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px;border-bottom:1px solid var(--line);background:linear-gradient(var(--card),#FBF7EE);
+  }
+  .widget-brand{display:flex;align-items:center;gap:9px;font-family:var(--serif);font-weight:600;font-size:1.05rem}
+  .widget-brand .w-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  .demo-tabs{display:flex;gap:6px}
+  .demo-tab{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;padding:6px 12px;border-radius:99px;
+    border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .2s;
+  }
+  .demo-tab:hover{border-color:var(--ink)}
+  .demo-tab.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .widget-stage{position:relative;display:grid;min-height:360px}
+  .stage{grid-area:1/1;padding:28px;display:none;flex-direction:column}
+  .stage.on{display:flex;animation:stagefade .45s ease}
+  @keyframes stagefade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* idle */
+  .stage-idle{align-items:center;justify-content:center;text-align:center;gap:18px}
+  .mic-btn{
+    width:88px;height:88px;border-radius:50%;border:none;cursor:pointer;
+    background:var(--accent);color:#fff;display:grid;place-items:center;
+    box-shadow:0 8px 24px -6px rgba(232,73,15,.5);transition:transform .2s;
+    position:relative;
+  }
+  .mic-btn:hover{transform:scale(1.06)}
+  .mic-btn::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:1.5px solid rgba(232,73,15,.4);animation:pulse-ring 2.2s infinite}
+  @keyframes pulse-ring{0%{transform:scale(.9);opacity:1}70%{transform:scale(1.25);opacity:0}100%{opacity:0}}
+  .mic-btn svg{width:34px;height:34px}
+  .idle-title{font-family:var(--serif);font-size:1.5rem;font-weight:500}
+  .idle-hint{color:var(--ink-soft);font-size:.95rem;max-width:34ch}
+
+  /* listening */
+  .listen-status{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.8rem;color:var(--accent-deep);margin-bottom:16px}
+  .rec-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);animation:blink 1.1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .wave{display:flex;align-items:center;gap:3px;height:52px;margin-bottom:18px}
+  .wave i{flex:1;background:var(--ink);border-radius:3px;min-height:4px;height:8px;opacity:.85;transition:height .1s linear}
+  .transcript{
+    font-family:var(--mono);font-size:.95rem;line-height:1.75;color:var(--ink-soft);
+    background:var(--paper);border:1px dashed var(--line);border-radius:12px;
+    padding:16px 18px;flex:1;overflow-y:auto;max-height:190px;
+  }
+  .transcript .w{opacity:0;animation:wordin .3s forwards}
+  @keyframes wordin{to{opacity:1}}
+  .caret{display:inline-block;width:8px;height:1.05em;background:var(--accent);vertical-align:text-bottom;margin-left:3px;animation:blink 1s infinite}
+
+  /* refining shimmer */
+  .stage-listening.refining .transcript{position:relative;color:var(--ink-faint)}
+  .stage-listening.refining .transcript::after{
+    content:"";position:absolute;inset:0;border-radius:12px;
+    background:linear-gradient(105deg,transparent 30%,rgba(232,73,15,.16) 50%,transparent 70%);
+    background-size:220% 100%;animation:shimmer 1.1s linear infinite;
+  }
+  @keyframes shimmer{from{background-position:180% 0}to{background-position:-80% 0}}
+
+  /* sent */
+  .stage-sent{gap:14px}
+  .sent-banner{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--green);font-size:.95rem}
+  .sent-check{width:24px;height:24px;flex:none}
+  .sent-check circle{fill:var(--green-soft);stroke:var(--green);stroke-width:1.5}
+  .sent-check path{stroke:var(--green);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none;
+    stroke-dasharray:22;stroke-dashoffset:22;animation:draw .55s .25s cubic-bezier(.6,0,.4,1) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .mail-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;flex:1;display:flex;flex-direction:column}
+  .mail-meta{padding:12px 18px;border-bottom:1px solid var(--line);font-size:.83rem;color:var(--ink-soft);display:grid;gap:2px}
+  .mail-meta b{color:var(--ink);font-weight:600}
+  .mail-body{padding:14px 18px;font-size:.93rem;line-height:1.65;color:var(--ink);overflow-y:auto}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    font-family:var(--mono);font-size:.72rem;padding:5px 11px;border-radius:99px;
+    background:var(--green-soft);color:var(--green);border:1px solid color-mix(in srgb,var(--green) 25%,transparent);
+  }
+  .chip.hot{background:var(--accent-soft);color:var(--accent-deep);border-color:color-mix(in srgb,var(--accent) 30%,transparent)}
+  .sent-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .sent-note{font-family:var(--mono);font-size:.72rem;color:var(--ink-faint)}
+  .replay{font-size:.85rem;padding:8px 16px}
+
+  /* ---------- stats strip ---------- */
+  .stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper-deep);margin-top:72px}
+  .stats-inner{display:grid;grid-template-columns:repeat(4,1fr);}
+  .stat{padding:34px 20px;text-align:center;border-left:1px solid var(--line)}
+  .stat:first-child{border-left:none}
+  .stat b{display:block;font-family:var(--serif);font-size:2.3rem;font-weight:500;letter-spacing:-.02em}
+  .stat b em{font-style:italic;color:var(--accent)}
+  .stat span{font-size:.85rem;color:var(--ink-soft)}
+  .stats-note{text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--ink-soft);padding:10px 0 0;letter-spacing:.08em}
+
+  /* ---------- sections ---------- */
+  section{padding:104px 0}
+  .sec-label{
+    font-family:var(--mono);font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);
+    display:flex;align-items:center;gap:12px;margin-bottom:18px;
+  }
+  .sec-label::before{content:"";width:26px;height:1px;background:var(--accent)}
+  h2{font-family:var(--serif);font-weight:490;font-size:clamp(2rem,4.4vw,3.2rem);line-height:1.1;letter-spacing:-.02em;max-width:22ch}
+  h2 em{font-style:italic;color:var(--accent)}
+  .sec-sub{color:var(--ink-soft);max-width:58ch;margin-top:16px;font-size:1.05rem}
+
+  /* how it works */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+  .step{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 26px;
+    position:relative;transition:transform .3s ease,box-shadow .3s ease;
+  }
+  .step:hover{transform:translateY(-4px);box-shadow:0 18px 40px -18px rgba(26,22,17,.22)}
+  .step-num{
+    font-family:var(--serif);font-style:italic;font-size:2.6rem;color:var(--accent);
+    line-height:1;margin-bottom:18px;display:block;
+  }
+  .step h3{font-family:var(--serif);font-size:1.35rem;font-weight:560;margin-bottom:10px}
+  .step p{color:var(--ink-soft);font-size:.95rem}
+  .step .mini{margin-top:22px;border-top:1px dashed var(--line);padding-top:16px;font-family:var(--mono);font-size:.78rem;color:var(--ink-faint);line-height:1.7}
+  .step .mini .hl{color:var(--accent-deep);background:var(--accent-soft);border-radius:4px;padding:1px 5px}
+  .step .mini .ok{color:var(--green)}
+
+  /* before / after */
+  .ba{background:var(--ink);color:var(--paper);border-radius:0}
+  .ba .sec-label{color:#FF7A4D}
+  .ba .sec-label::before{background:#FF7A4D}
+  .ba h2{color:var(--paper)}
+  .ba h2 em{color:#FF7A4D}
+  .ba .sec-sub{color:#B7AE9E}
+  .ba-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:26px;align-items:stretch;margin-top:58px}
+  .ba-card{border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px}
+  .ba-raw{background:#241F18;border:1px dashed #4A4335}
+  .ba-clean{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .ba-tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
+  .ba-raw .ba-tag{color:#8F8674}
+  .ba-clean .ba-tag{color:var(--green)}
+  .ba-raw p{font-family:var(--mono);font-size:.92rem;line-height:1.8;color:#C9C0AE}
+  .ba-clean .subject{font-weight:650;font-size:.98rem}
+  .ba-clean p{font-size:.95rem;line-height:1.7;color:var(--ink)}
+  .ba-relic{font-family:var(--mono);font-size:.85rem;color:#8F8674;margin-top:22px}
+  .ba-relic s{text-decoration-color:#FF7A4D;text-decoration-thickness:1.5px}
+  .ba-arrow{align-self:center;display:flex;flex-direction:column;align-items:center;gap:8px;color:#FF7A4D}
+  .ba-arrow svg{width:38px;height:38px}
+  .ba-arrow span{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#8F8674;white-space:nowrap}
+
+  /* testimonials */
+  .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+  .quote{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 26px;
+    display:flex;flex-direction:column;gap:20px;
+  }
+  .quote .qmark{font-family:var(--serif);font-size:3.4rem;line-height:.6;color:var(--accent);font-style:italic}
+  .quote p{font-family:var(--serif);font-size:1.12rem;line-height:1.55;font-weight:450;flex:1}
+  .quote footer{display:flex;align-items:center;gap:12px}
+  .avatar{
+    width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+    font-family:var(--serif);font-weight:600;font-size:.95rem;color:var(--paper);
+  }
+  .av1{background:#B5541F}.av2{background:#3E5F48}.av3{background:#54432E}
+  .quote cite{font-style:normal;font-size:.85rem;line-height:1.4}
+  .quote cite b{display:block;font-weight:650}
+  .quote cite span{color:var(--ink-soft)}
+
+  /* install */
+  .install{background:var(--paper-deep);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .install-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:60px;align-items:center}
+  .code-card{
+    background:var(--ink);border-radius:16px;padding:8px;
+    box-shadow:0 24px 60px -20px rgba(26,22,17,.4);
+  }
+  .code-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+  .code-dots{display:flex;gap:6px}
+  .code-dots i{width:10px;height:10px;border-radius:50%;background:#3C362C}
+  .copy-btn{
+    font-family:var(--mono);font-size:.72rem;background:transparent;color:#8F8674;
+    border:1px solid #3C362C;border-radius:8px;padding:5px 12px;cursor:pointer;transition:all .2s;
+  }
+  .copy-btn:hover{color:var(--paper);border-color:#8F8674}
+  .code-body{padding:18px 20px 22px;font-family:var(--mono);font-size:.85rem;line-height:1.7;color:#C9C0AE;overflow-x:auto;white-space:pre}
+  .code-body .t{color:#FF7A4D}.code-body .a{color:#7FB08F}.code-body .v{color:#E8DCC3}
+  .platforms{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px}
+  .platform{
+    font-size:.83rem;color:var(--ink-soft);border:1px solid var(--line);border-radius:99px;
+    padding:6px 15px;background:var(--card);
+  }
+
+  /* final cta */
+  .final{text-align:center;padding:130px 0}
+  .final h2{margin:0 auto 18px;max-width:18ch}
+  .final .sec-sub{margin:0 auto 38px}
+  .final-mic{
+    width:64px;height:64px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:#fff;
+    margin:0 auto 30px;box-shadow:0 10px 30px -8px rgba(232,73,15,.5);
+  }
+  .final-mic svg{width:26px;height:26px}
+
+  .cta-form{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:520px;margin:0 auto}
+  .cta-form input{
+    font:inherit;font-size:.98rem;padding:13px 24px;border-radius:99px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);
+    flex:1;min-width:240px;
+  }
+  .cta-form input::placeholder{color:var(--ink-faint)}
+  .cta-form input:focus{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+  .cta-fine{font-family:var(--mono);font-size:.74rem;color:var(--ink-faint);margin-top:16px}
+  .cta-done{
+    font-family:var(--serif);font-size:1.4rem;font-weight:500;color:var(--green);
+    display:flex;align-items:center;gap:10px;justify-content:center;animation:stagefade .45s ease;
+  }
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .widget-stage:focus,.cta-done:focus{outline:none}
+  footer.site{
+    border-top:1px solid var(--line);padding:34px 0;
+  }
+  .foot-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .foot-inner .tagline{font-family:var(--serif);font-style:italic;color:var(--ink-soft)}
+  .foot-inner small{color:var(--ink-faint);font-size:.82rem}
+
+  /* scroll reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .steps,.quotes{grid-template-columns:1fr}
+    .stats-inner{grid-template-columns:repeat(2,1fr)}
+    .stat:nth-child(3){border-left:none}
+    .stat{border-top:1px solid var(--line)}
+    .stat:nth-child(-n+2){border-top:none}
+    .ba-grid{grid-template-columns:1fr}
+    .ba-arrow{flex-direction:row;transform:rotate(90deg);margin:-6px auto}
+    .ba-arrow span{display:none}
+    .install-grid{grid-template-columns:minmax(0,1fr);gap:40px}
+    .nav-links a:not(.btn){display:none}
+  }
+  @media (max-width:560px){
+    section{padding:72px 0}
+    .stage{padding:20px}
+    .widget-stage{min-height:400px}
+    .demo-tabs{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="wordmark" href="#">parla<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#proof">Why voice</a>
+      <a href="#install">Install</a>
+      <a class="btn btn-primary" href="#cta">Get early access</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-glow"></div>
+  <div class="wrap">
+    <span class="overline rise d1"><span class="pulse"></span>The voice-first inquiry widget</span>
+    <h1 class="rise d2">Your contact form just learned to <em>listen.</em></h1>
+    <p class="hero-sub rise d3">Visitors tap a mic and simply say what they need — as messy as they like. Parla rewrites it into the clearest inquiry you've ever received, and delivers it straight to your inbox.</p>
+    <div class="hero-ctas rise d4">
+      <a class="btn btn-accent" href="#cta">Get early access</a>
+      <button class="btn btn-ghost" id="watchDemo">Watch it listen <span aria-hidden="true">↓</span></button>
+    </div>
+
+    <div class="widget-frame rise d5">
+      <div class="widget-caption">Interactive demo — a scripted preview</div>
+      <div class="widget" id="widget">
+        <div class="widget-head">
+          <div class="widget-brand"><span class="w-dot"></span>parla</div>
+          <div class="demo-tabs" role="group" aria-label="Demo language">
+            <button class="demo-tab active" data-demo="en" aria-pressed="true">EN · plumber</button>
+            <button class="demo-tab" data-demo="es" aria-pressed="false">ES → EN · bakery</button>
+          </div>
+        </div>
+        <span class="sr-only" role="status" id="demoStatus"></span>
+        <div class="widget-stage" tabindex="-1">
+
+          <div class="stage stage-idle on" id="stIdle">
+            <button class="mic-btn" id="micBtn" aria-label="Start voice inquiry demo">
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3.5"/></svg>
+            </button>
+            <div class="idle-title">Tap the mic. Just talk.</div>
+            <p class="idle-hint">No forms, no typing. Say what you need and Parla does the rest.</p>
+          </div>
+
+          <div class="stage stage-listening" id="stListen">
+            <div class="listen-status"><span class="rec-dot"></span><span id="listenLabel">Listening</span> — <span id="timer">0:00</span></div>
+            <div class="wave" id="wave" aria-hidden="true"></div>
+            <div class="transcript" id="transcript"></div>
+          </div>
+
+          <div class="stage stage-sent" id="stSent">
+            <div class="sent-banner">
+              <svg class="sent-check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>
+              <span>Inquiry sent to <span id="sentTo">—</span></span>
+            </div>
+            <div class="mail-card">
+              <div class="mail-meta">
+                <div><b>Subject:</b> <span id="mailSubject"></span></div>
+              </div>
+              <div class="mail-body" id="mailBody"></div>
+              <div class="mail-meta" style="border-top:1px solid var(--line);border-bottom:none">
+                <div class="chips" id="mailChips"></div>
+              </div>
+            </div>
+            <div class="sent-actions">
+              <span class="sent-note" id="sentNote">Rewritten &amp; delivered seconds after they stop talking</span>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost replay" id="replayBtn"><span aria-hidden="true">↻</span> Replay</button>
+                <button class="btn btn-primary replay" id="otherBtn" aria-label="Try Spanish">Try Spanish →</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="stats">
+  <div class="wrap">
+    <div class="stats-inner">
+      <div class="stat reveal"><b>2.4<em>×</em></b><span>longer, richer inquiries</span></div>
+      <div class="stat reveal"><b>+38<em>%</em></b><span>more inquiries completed</span></div>
+      <div class="stat reveal"><b>40<em>+</em></b><span>languages, one inbox</span></div>
+      <div class="stat reveal"><b>11<em>s</em></b><span>median time to ask</span></div>
+    </div>
+    <div class="stats-note">— illustrative targets, not measured results —</div>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-label reveal">How it works</div>
+    <h2 class="reveal">A few seconds for them.<br>Zero work for <em>you.</em></h2>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step-num">01</span>
+        <h3>They speak</h3>
+        <p>A visitor taps the mic and says what they need — 40+ languages, any accent, mid-thought rambling welcome.</p>
+        <div class="mini">"yeah hi um so basically we've got this <span class="hl">leaking tap</span>… it's been like two weeks??"</div>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">02</span>
+        <h3>Parla rewrites</h3>
+        <p>Filler removed, details kept. AI restructures their words into a clear, complete message — translated into your language.</p>
+        <div class="mini"><span class="ok">✓ intent</span> · <span class="ok">✓ location</span> · <span class="ok">✓ timing</span> · <span class="ok">✓ tone</span></div>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">03</span>
+        <h3>You receive</h3>
+        <p>A polished inquiry lands in your inbox or CRM with the key details extracted — ready to quote, book, or reply.</p>
+        <div class="mini"><span class="ok">→ delivered</span> Subject: Leaking tap — repair request (Northcote)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ba" id="proof">
+  <div class="wrap">
+    <div class="sec-label reveal">Why voice</div>
+    <h2 class="reveal">People say things they would <em>never</em> type.</h2>
+    <p class="sec-sub reveal">Typing on a phone is friction. Talking is free. Parla catches the whole story — then makes it read beautifully, in your language.</p>
+    <p class="ba-relic reveal"><s>"need help with fix broken thing"</s>&nbsp; — an actual typed inquiry, never answered</p>
+    <div class="ba-grid">
+      <div class="ba-card ba-raw reveal">
+        <span class="ba-tag">◉ What they said — French, 19 seconds</span>
+        <p lang="fr">« oui bonjour euh voilà… on se marie en septembre et on cherche un photographe mais genre pas trop posé, plutôt naturel quoi… on est une soixantaine, c'est juste à côté de Lyon, et du coup vous seriez libre le 12 septembre ? merci »</p>
+      </div>
+      <div class="ba-arrow reveal">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+        <span>parla rewrites</span>
+      </div>
+      <div class="ba-card ba-clean reveal">
+        <span class="ba-tag">✓ What you received — English</span>
+        <div class="subject">Wedding photography — 12 September, Lyon area</div>
+        <p>Hello! We're getting married this September and are looking for a photographer with a natural, candid style rather than posed shots. Around 60 guests, just outside Lyon. Would you be available on 12 September? Thank you!</p>
+        <div class="chips">
+          <span class="chip hot">FR → EN</span>
+          <span class="chip">Date: 12 Sep</span>
+          <span class="chip">Guests: ~60</span>
+          <span class="chip">Style: candid</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-label reveal">Happy inboxes</div>
+    <h2 class="reveal">The inquiries got longer. The replies got <em>faster.</em></h2>
+    <p class="sec-sub reveal">Illustrative scenarios — the inboxes we're building toward.</p>
+    <div class="quotes">
+      <div class="quote reveal">
+        <span class="qmark">"</span>
+        <p>We used to get two-line emails we couldn't quote from. Now every inquiry arrives with the suburb, the job and the timeline. It's absurd how much easier quoting got.</p>
+        <footer>
+          <div class="avatar av1" aria-hidden="true">L</div>
+          <cite><b>A landscaping company</b><span>Melbourne</span></cite>
+        </footer>
+      </div>
+      <div class="quote reveal">
+        <span class="qmark">"</span>
+        <p>Half our customers speak Portuguese. With Parla they just talk — and we read perfect English. We stopped losing people at the contact form.</p>
+        <footer>
+          <div class="avatar av2" aria-hidden="true">A</div>
+          <cite><b>An auto repair shop</b><span>Toronto</span></cite>
+        </footer>
+      </div>
+      <div class="quote reveal">
+        <span class="qmark">"</span>
+        <p>Inquiries doubled in the first month. People will say things into a mic that they'd never bother to type on a phone keyboard.</p>
+        <footer>
+          <div class="avatar av3" aria-hidden="true">F</div>
+          <cite><b>A florist</b><span>London</span></cite>
+        </footer>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="install" id="install">
+  <div class="wrap install-grid">
+    <div>
+      <div class="sec-label reveal">Install</div>
+      <h2 class="reveal">One line.<br>Any <em>website.</em></h2>
+      <p class="sec-sub reveal">Paste the snippet and the mic appears on your site — live in about 60 seconds. Inquiries arrive by email, or flow into the tools you already use.</p>
+      <div class="platforms reveal">
+        <span class="platform">WordPress</span>
+        <span class="platform">Squarespace</span>
+        <span class="platform">Webflow</span>
+        <span class="platform">Shopify</span>
+        <span class="platform">Wix</span>
+        <span class="platform">Custom sites</span>
+      </div>
+    </div>
+    <div class="code-card reveal">
+      <div class="code-head">
+        <div class="code-dots"><i></i><i></i><i></i></div>
+        <button class="copy-btn" id="copyBtn">copy</button>
+        <span class="sr-only" role="status" id="copyStatus"></span>
+      </div>
+      <div class="code-body" id="codeSnippet">&lt;<span class="t">script</span> <span class="a">src</span>=<span class="v">"https://cdn.parla.chat/widget.js"</span>
+        <span class="a">data-key</span>=<span class="v">"pk_live_9F3KX"</span>
+        <span class="a">data-lang</span>=<span class="v">"en"</span>&gt;&lt;/<span class="t">script</span>&gt;</div>
+    </div>
+  </div>
+</section>
+
+<section class="final" id="cta">
+  <div class="wrap">
+    <div class="final-mic reveal">
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3.5"/></svg>
+    </div>
+    <h2 class="reveal">Give your customers a <em>voice.</em></h2>
+    <p class="sec-sub reveal">Early access is rolling out now — speak-to-inquiry on your site in about a minute.</p>
+    <form class="cta-form reveal" id="ctaForm">
+      <input type="email" id="ctaEmail" name="email" autocomplete="email" required placeholder="you@yourbusiness.com" aria-label="Your email address">
+      <button class="btn btn-accent" type="submit">Get early access →</button>
+    </form>
+    <p class="cta-fine reveal">Free while in beta — first 500 sites. Your old form won't take it personally.</p>
+  </div>
+</section>
+</main>
+
+<footer class="site">
+  <div class="wrap foot-inner">
+    <a class="wordmark" href="#">parla<span class="dot">.</span></a>
+    <span class="tagline">Say the word.</span>
+    <small>© 2026 Parla. Concept site.</small>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const rmQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let reduced = rmQuery.matches;
+  if (rmQuery.addEventListener) rmQuery.addEventListener('change', e=>{ reduced = e.matches; });
+
+  /* ---------- demo data ---------- */
+  const DEMOS = {
+    en: {
+      raw: "yeah hi um— so basically we've got this leaking tap in the upstairs bathroom, it's been dripping for like two weeks now?? and honestly the water bill is… yeah. anyway we're over in Northcote, could someone maybe come take a look this week? oh and uh roughly how much would that cost, thanks",
+      to: "Harbor & Sons Plumbing",
+      subject: "Leaking tap — repair request (Northcote)",
+      body: "Hi — we have a leaking tap in our upstairs bathroom that's been dripping for about two weeks, and it's starting to show on our water bill. We're located in Northcote. Could someone come take a look this week? A rough cost estimate would be much appreciated. Thank you!",
+      chips: ['<span class="chip">Location: Northcote</span>','<span class="chip">Timing: this week</span>','<span class="chip">Wants: visit + quote</span>'],
+      listenLabel: "Listening",
+      other: "Try Spanish →", otherDemo: "es"
+    },
+    es: {
+      raw: "hola sí buenas… quería preguntar si hacen tartas de cumpleaños personalizadas, es que mi hija cumple ocho años el sábado y le encantan los caballos, ¿podrían hacer algo así? somos unas veinte personas… ¿y más o menos cuánto costaría? gracias",
+      to: "Butterfield Bakery",
+      subject: "Custom birthday cake — horse theme, this Saturday",
+      body: "Hello! I'd like to ask whether you make custom birthday cakes. My daughter turns eight this Saturday and she loves horses — could you create something horse-themed for around 20 guests? A rough price would be great. Thank you!",
+      chips: ['<span class="chip hot">Translated: ES → EN</span>','<span class="chip">Date: Saturday</span>','<span class="chip">Serves: ~20</span>'],
+      listenLabel: "Listening — Español detected",
+      other: "← Back to English", otherDemo: "en"
+    }
+  };
+
+  const stIdle = document.getElementById('stIdle');
+  const stListen = document.getElementById('stListen');
+  const stSent = document.getElementById('stSent');
+  const transcript = document.getElementById('transcript');
+  const wave = document.getElementById('wave');
+  const timerEl = document.getElementById('timer');
+  const listenLabel = document.getElementById('listenLabel');
+  const tabs = document.querySelectorAll('.demo-tab');
+  const stage = document.querySelector('.widget-stage');
+  const demoStatus = document.getElementById('demoStatus');
+
+  /* build waveform bars */
+  const BAR_COUNT = 28;
+  for (let i=0;i<BAR_COUNT;i++){ wave.appendChild(document.createElement('i')); }
+  const bars = wave.querySelectorAll('i');
+
+  let waveRAF = null, timers = [], currentDemo = 'en', running = false;
+
+  function clearAll(){
+    timers.forEach(t=>clearTimeout(t));
+    timers = [];
+    if (waveRAF) cancelAnimationFrame(waveRAF);
+    waveRAF = null;
+  }
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+
+  function show(stage){
+    [stIdle, stListen, stSent].forEach(s=>s.classList.remove('on'));
+    stListen.classList.remove('refining');
+    stage.classList.add('on');
+  }
+
+  function animateWave(){
+    let t = 0;
+    function frame(){
+      t += 0.14;
+      bars.forEach((b,i)=>{
+        const h = 8 + Math.abs(Math.sin(t + i*0.55)) * 26 + Math.random()*14;
+        b.style.height = h + 'px';
+      });
+      waveRAF = requestAnimationFrame(frame);
+    }
+    frame();
+  }
+  function stopWave(){
+    if (waveRAF) cancelAnimationFrame(waveRAF);
+    waveRAF = null;
+    bars.forEach(b=>b.style.height='6px');
+  }
+
+  function setTab(key){
+    tabs.forEach(tb=>{
+      const on = tb.dataset.demo===key;
+      tb.classList.toggle('active', on);
+      tb.setAttribute('aria-pressed', String(on));
+    });
+  }
+
+  function runDemo(key){
+    clearAll(); stopWave();
+    currentDemo = key;
+    setTab(key);
+    const d = DEMOS[key];
+    running = true;
+
+    show(stListen);
+    if (stage.contains(document.activeElement)) stage.focus({preventScroll:true});
+    transcript.setAttribute('lang', key);
+    transcript.innerHTML = '';
+    demoStatus.textContent = 'Demo playing — transcribing the visitor';
+
+    if (reduced){
+      listenLabel.textContent = 'Rewriting';
+      timerEl.textContent = '0:11';
+      d.raw.split(' ').forEach(word=>{
+        const s = document.createElement('span');
+        s.textContent = word + ' ';
+        transcript.appendChild(s);
+      });
+      later(()=>finish(d), 1200);
+      return;
+    }
+
+    listenLabel.textContent = 'Listening';
+    const caret = document.createElement('span');
+    caret.className = 'caret';
+    transcript.appendChild(caret);
+
+    animateWave();
+
+    /* timer */
+    let secs = 0;
+    timerEl.textContent = '0:00';
+    function tick(){
+      secs++;
+      timerEl.textContent = '0:' + String(secs).padStart(2,'0');
+      timers.push(setTimeout(tick, 1000));
+    }
+    timers.push(setTimeout(tick, 1000));
+
+    /* type words */
+    const words = d.raw.split(' ');
+    let delay = 350;
+    words.forEach((word, i)=>{
+      later(()=>{
+        const span = document.createElement('span');
+        span.className = 'w';
+        span.textContent = word + ' ';
+        transcript.insertBefore(span, caret);
+        transcript.scrollTop = transcript.scrollHeight;
+        if (key==='es' && i===4){ listenLabel.textContent = 'Listening — Español detected'; }
+      }, delay);
+      delay += 105 + (/[—…?]|\?\?/.test(word) ? 320 : 0) + Math.random()*45;
+    });
+
+    /* refine */
+    later(()=>{
+      stopWave();
+      caret.remove();
+      listenLabel.textContent = key==='es' ? 'Rewriting & translating' : 'Rewriting';
+      stListen.classList.add('refining');
+    }, delay + 500);
+
+    /* sent */
+    later(()=>{ finish(d); }, delay + 2200);
+  }
+
+  function finish(d){
+    clearAll(); stopWave();
+    document.getElementById('sentTo').textContent = d.to;
+    document.getElementById('mailSubject').textContent = d.subject;
+    document.getElementById('mailBody').textContent = d.body;
+    document.getElementById('mailChips').innerHTML = d.chips.join('');
+    const ob = document.getElementById('otherBtn');
+    ob.textContent = d.other;
+    ob.setAttribute('aria-label', d.other.replace(/[←→]/g, '').trim());
+    show(stSent);
+    demoStatus.textContent = 'Inquiry sent to ' + d.to;
+    if (stage.contains(document.activeElement) || document.activeElement === document.body) {
+      document.getElementById('replayBtn').focus({preventScroll:true});
+    }
+    running = false;
+  }
+
+  /* wiring */
+  document.getElementById('micBtn').addEventListener('click', ()=>runDemo(currentDemo));
+  document.getElementById('replayBtn').addEventListener('click', ()=>runDemo(currentDemo));
+  document.getElementById('otherBtn').addEventListener('click', ()=>runDemo(DEMOS[currentDemo].otherDemo));
+  tabs.forEach(tb=>tb.addEventListener('click', ()=>runDemo(tb.dataset.demo)));
+  document.getElementById('watchDemo').addEventListener('click', ()=>{
+    document.getElementById('widget').scrollIntoView({behavior: reduced?'auto':'smooth', block:'center'});
+    setTimeout(()=>runDemo(currentDemo), reduced?0:450);
+  });
+
+  /* early-access form (front-end demo only) */
+  document.getElementById('ctaForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const done = document.createElement('div');
+    done.className = 'cta-done';
+    done.setAttribute('role', 'status');
+    done.tabIndex = -1;
+    done.innerHTML = '<svg class="sent-check" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>You\'re in — watch your inbox.';
+    this.replaceChildren(done);
+    done.focus();
+  });
+
+  /* copy snippet */
+  const copyStatus = document.getElementById('copyStatus');
+  function copyFeedback(btn, ok){
+    btn.textContent = ok ? 'copied ✓' : 'copy failed';
+    copyStatus.textContent = ok ? 'Snippet copied to clipboard' : 'Copy failed';
+    setTimeout(()=>{ btn.textContent = 'copy'; copyStatus.textContent = ''; }, 1600);
+  }
+  document.getElementById('copyBtn').addEventListener('click', function(){
+    const text = '<script src="https://cdn.parla.chat/widget.js" data-key="pk_live_9F3KX" data-lang="en"><\/script>';
+    const btn = this;
+    const legacyCopy = ()=>{
+      try{
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        copyFeedback(btn, ok);
+      }catch(err){ copyFeedback(btn, false); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(()=>copyFeedback(btn, true)).catch(legacyCopy);
+    } else legacyCopy();
+  });
+
+  /* scroll reveals */
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold: 0.14});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+</script>
+</body>
+</html>
