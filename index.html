@@ -165,6 +165,18 @@
   @keyframes wordin{to{opacity:1}}
   .caret{display:inline-block;width:8px;height:1.05em;background:var(--accent);vertical-align:text-bottom;margin-left:3px;animation:blink 1s infinite}
 
+  /* follow-up question */
+  .followup-row{
+    position:relative;z-index:1;
+    margin-top:14px;padding:10px 14px;border-radius:10px;
+    font-family:var(--mono);font-size:.88rem;line-height:1.6;
+    max-width:92%;opacity:0;animation:bubblein .35s ease forwards;
+  }
+  .followup-row .followup-tag{display:block;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+  .followup-row.ask{background:var(--accent-soft);color:var(--accent-deep);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+  .followup-row.reply{background:var(--card);color:var(--ink);border:1px solid var(--line);margin-left:auto}
+  @keyframes bubblein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
   /* refining shimmer */
   .stage-listening.refining .transcript{position:relative;color:var(--ink-faint)}
   .stage-listening.refining .transcript::after{
@@ -233,6 +245,36 @@
   .step .mini{margin-top:22px;border-top:1px dashed var(--line);padding-top:16px;font-family:var(--mono);font-size:.78rem;color:var(--ink-faint);line-height:1.7}
   .step .mini .hl{color:var(--accent-deep);background:var(--accent-soft);border-radius:4px;padding:1px 5px}
   .step .mini .ok{color:var(--green)}
+
+  /* business context setup */
+  .context-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:26px;align-items:stretch;margin-top:56px}
+  .context-card{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .context-label{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+  .context-field{display:flex;flex-direction:column;gap:8px}
+  .context-field-label{font-family:var(--sans);font-weight:600;font-size:.85rem;color:var(--ink-soft)}
+  .context-pill{
+    align-self:flex-start;font-family:var(--sans);font-size:.95rem;font-weight:600;
+    background:var(--paper-deep);border:1px solid var(--line);border-radius:99px;padding:9px 18px;
+  }
+  .context-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .context-chip{
+    font-family:var(--mono);font-size:.78rem;padding:7px 13px;border-radius:99px;
+    background:var(--paper-deep);border:1px solid var(--line);color:var(--ink);
+  }
+  .context-chip.ghost{color:var(--ink-faint);border-style:dashed;background:transparent}
+  .context-arrow{align-self:center;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--accent-deep)}
+  .context-arrow svg{width:34px;height:34px}
+  .context-arrow span{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap;max-width:9ch;text-align:center}
+  .context-out{background:var(--paper-deep)}
+  .context-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+  .context-list li{
+    font-family:var(--serif);font-size:1.05rem;font-weight:450;color:var(--ink);
+    padding-left:16px;border-left:2px solid var(--accent-soft);
+  }
+  .context-note{font-size:.88rem;color:var(--ink-soft);border-top:1px dashed var(--line);padding-top:14px;margin-top:2px}
 
   /* before / after */
   .ba{background:var(--ink);color:var(--paper);border-radius:0}
@@ -341,9 +383,9 @@
     .stat:nth-child(3){border-left:none}
     .stat{border-top:1px solid var(--line)}
     .stat:nth-child(-n+2){border-top:none}
-    .ba-grid{grid-template-columns:1fr}
-    .ba-arrow{flex-direction:row;transform:rotate(90deg);margin:-6px auto}
-    .ba-arrow span{display:none}
+    .ba-grid,.context-grid{grid-template-columns:1fr}
+    .ba-arrow,.context-arrow{flex-direction:row;transform:rotate(90deg);margin:-6px auto}
+    .ba-arrow span,.context-arrow span{display:none}
     .install-grid{grid-template-columns:minmax(0,1fr);gap:40px}
     .nav-links a:not(.btn){display:none}
   }
@@ -368,6 +410,7 @@
     <a class="wordmark" href="#">parla<span class="dot">.</span></a>
     <div class="nav-links">
       <a href="#how">How it works</a>
+      <a href="#context">Setup</a>
       <a href="#proof">Why voice</a>
       <a href="#install">Install</a>
       <a class="btn btn-primary" href="#cta">Get early access</a>
@@ -380,7 +423,7 @@
   <div class="wrap">
     <span class="overline rise d1"><span class="pulse"></span>The voice-first inquiry widget</span>
     <h1 class="rise d2">Your contact form just learned to <em>listen.</em></h1>
-    <p class="hero-sub rise d3">Visitors tap a mic and simply say what they need — as messy as they like. Parla rewrites it into the clearest inquiry you've ever received, and delivers it straight to your inbox.</p>
+    <p class="hero-sub rise d3">Visitors tap a mic and simply say what they need — as messy as they like. Parla rewrites it into the clearest inquiry you've ever received — asking one sharp follow-up if something's missing — and delivers it straight to your inbox.</p>
     <div class="hero-ctas rise d4">
       <a class="btn btn-accent" href="#cta">Get early access</a>
       <button class="btn btn-ghost" id="watchDemo">Watch it listen <span aria-hidden="true">↓</span></button>
@@ -477,6 +520,47 @@
         <h3>You receive</h3>
         <p>A polished inquiry lands in your inbox or CRM with the key details extracted — ready to quote, book, or reply.</p>
         <div class="mini"><span class="ok">→ delivered</span> Subject: Leaking tap — repair request (Northcote)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="context">
+  <div class="wrap">
+    <div class="sec-label reveal">Business setup</div>
+    <h2 class="reveal">Teach Parla your business <em>once.</em></h2>
+    <p class="sec-sub reveal">Tell us your industry and the services you offer. Parla uses it to know what's missing from an inquiry — and asks the one follow-up question that actually matters, instead of guessing.</p>
+    <div class="context-grid">
+      <div class="context-card reveal">
+        <span class="context-label">Your business</span>
+        <div class="context-field">
+          <span class="context-field-label">Industry</span>
+          <span class="context-pill">Plumbing &amp; emergency repairs</span>
+        </div>
+        <div class="context-field">
+          <span class="context-field-label">Services</span>
+          <div class="context-chips">
+            <span class="context-chip">Leak repair</span>
+            <span class="context-chip">Drain clearing</span>
+            <span class="context-chip">Hot water systems</span>
+            <span class="context-chip">Emergency callouts</span>
+            <span class="context-chip ghost">+ Add service</span>
+          </div>
+        </div>
+      </div>
+      <div class="context-arrow reveal">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+        <span>shapes the follow-up</span>
+      </div>
+      <div class="context-card context-out reveal">
+        <span class="context-label">What Parla checks for</span>
+        <ul class="context-list">
+          <li>Is this urgent, or can it wait?</li>
+          <li>House or apartment — affects access</li>
+          <li>Roughly how old is the system?</li>
+          <li>Is the area easy to reach?</li>
+        </ul>
+        <p class="context-note">A florist gets asked about the delivery date. A bakery gets asked whether it's pickup or delivery. Same widget, different follow-up — like the house-or-apartment question above, but tailored to what you do.</p>
       </div>
     </div>
   </div>
@@ -608,19 +692,23 @@
   const DEMOS = {
     en: {
       raw: "yeah hi um— so basically we've got this leaking tap in the upstairs bathroom, it's been dripping for like two weeks now?? and honestly the water bill is… yeah. anyway we're over in Northcote, could someone maybe come take a look this week? oh and uh roughly how much would that cost, thanks",
+      followUpQ: "Quick one — is this a house or an apartment?",
+      followUpA: "oh it's a house, ground floor, easy access",
       to: "Harbor & Sons Plumbing",
       subject: "Leaking tap — repair request (Northcote)",
-      body: "Hi — we have a leaking tap in our upstairs bathroom that's been dripping for about two weeks, and it's starting to show on our water bill. We're located in Northcote. Could someone come take a look this week? A rough cost estimate would be much appreciated. Thank you!",
-      chips: ['<span class="chip">Location: Northcote</span>','<span class="chip">Timing: this week</span>','<span class="chip">Wants: visit + quote</span>'],
+      body: "Hi — we have a leaking tap in our upstairs bathroom that's been dripping for about two weeks, and it's starting to show on our water bill. We're located in Northcote — a house with easy ground-floor access. Could someone come take a look this week? A rough cost estimate would be much appreciated. Thank you!",
+      chips: ['<span class="chip">Location: Northcote</span>','<span class="chip">Property: house</span>','<span class="chip">Timing: this week</span>','<span class="chip">Wants: visit + quote</span>'],
       listenLabel: "Listening",
       other: "Try Spanish →", otherDemo: "es"
     },
     es: {
       raw: "hola sí buenas… quería preguntar si hacen tartas de cumpleaños personalizadas, es que mi hija cumple ocho años el sábado y le encantan los caballos, ¿podrían hacer algo así? somos unas veinte personas… ¿y más o menos cuánto costaría? gracias",
+      followUpQ: "Una cosita más — ¿la recogen ustedes o quieren que se la enviemos?",
+      followUpA: "la recogemos nosotros, gracias",
       to: "Butterfield Bakery",
       subject: "Custom birthday cake — horse theme, this Saturday",
-      body: "Hello! I'd like to ask whether you make custom birthday cakes. My daughter turns eight this Saturday and she loves horses — could you create something horse-themed for around 20 guests? A rough price would be great. Thank you!",
-      chips: ['<span class="chip hot">Translated: ES → EN</span>','<span class="chip">Date: Saturday</span>','<span class="chip">Serves: ~20</span>'],
+      body: "Hello! I'd like to ask whether you make custom birthday cakes. My daughter turns eight this Saturday and she loves horses — could you create something horse-themed for around 20 guests? We'll collect it in-store. A rough price would be great. Thank you!",
+      chips: ['<span class="chip hot">Translated: ES → EN</span>','<span class="chip">Date: Saturday</span>','<span class="chip">Serves: ~20</span>','<span class="chip">Pickup: in-store</span>'],
       listenLabel: "Listening — Español detected",
       other: "← Back to English", otherDemo: "en"
     }
@@ -699,12 +787,21 @@
 
     if (reduced){
       listenLabel.textContent = 'Rewriting';
-      timerEl.textContent = '0:11';
+      timerEl.textContent = '0:14';
       d.raw.split(' ').forEach(word=>{
         const s = document.createElement('span');
         s.textContent = word + ' ';
         transcript.appendChild(s);
       });
+      const ask0 = document.createElement('div');
+      ask0.className = 'followup-row ask';
+      ask0.innerHTML = '<span class="followup-tag">Parla asks</span>' + d.followUpQ;
+      const reply0 = document.createElement('div');
+      reply0.className = 'followup-row reply';
+      reply0.innerHTML = '<span class="followup-tag">They reply</span>' + d.followUpA;
+      transcript.appendChild(ask0);
+      transcript.appendChild(reply0);
+      demoStatus.textContent = 'Parla asks: ' + d.followUpQ + '. They replied: ' + d.followUpA;
       later(()=>finish(d), 1200);
       return;
     }
@@ -741,16 +838,39 @@
       delay += 105 + (/[—…?]|\?\?/.test(word) ? 320 : 0) + Math.random()*45;
     });
 
+    /* follow-up question */
+    later(()=>{
+      caret.remove();
+      listenLabel.textContent = 'Parla asking a follow-up';
+      const ask = document.createElement('div');
+      ask.className = 'followup-row ask';
+      ask.innerHTML = '<span class="followup-tag">Parla asks</span>' + d.followUpQ;
+      transcript.appendChild(ask);
+      transcript.scrollTop = transcript.scrollHeight;
+      demoStatus.textContent = 'Parla asks: ' + d.followUpQ;
+    }, delay + 300);
+
+    /* follow-up reply */
+    later(()=>{
+      listenLabel.textContent = 'Listening';
+      const reply = document.createElement('div');
+      reply.className = 'followup-row reply';
+      reply.innerHTML = '<span class="followup-tag">They reply</span>' + d.followUpA;
+      transcript.appendChild(reply);
+      transcript.scrollTop = transcript.scrollHeight;
+      demoStatus.textContent = 'They replied: ' + d.followUpA;
+    }, delay + 1300);
+
     /* refine */
     later(()=>{
       stopWave();
-      caret.remove();
       listenLabel.textContent = key==='es' ? 'Rewriting & translating' : 'Rewriting';
       stListen.classList.add('refining');
-    }, delay + 500);
+      demoStatus.textContent = key==='es' ? 'Rewriting & translating the inquiry' : 'Rewriting the inquiry';
+    }, delay + 2000);
 
     /* sent */
-    later(()=>{ finish(d); }, delay + 2200);
+    later(()=>{ finish(d); }, delay + 3700);
   }
 
   function finish(d){
